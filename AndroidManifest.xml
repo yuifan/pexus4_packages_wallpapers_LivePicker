@@ -26,29 +26,36 @@
 
     <uses-permission android:name="android.permission.SET_WALLPAPER_COMPONENT" />
     <uses-permission android:name="android.permission.BIND_WALLPAPER" />
-    
+
     <application
         android:label="@string/application_name"
-        android:icon="@drawable/ic_launcher_live_wallpaper">
+        android:icon="@mipmap/ic_launcher_live_wallpaper">
 
-        <activity android:name="LiveWallpaperListActivity"
-            android:icon="@drawable/ic_launcher_live_wallpaper"
-            android:label="@string/live_wallpaper_picker_title"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:screenOrientation="nosensor">
+        <activity android:name="LiveWallpaperActivity"
+            android:label="@string/live_wallpaper_picker_label"
+            android:theme="@style/LivePickerTheme"
+            android:hardwareAccelerated="true">
             <intent-filter>
                 <action android:name="android.service.wallpaper.LIVE_WALLPAPER_CHOOSER" />
                 <action android:name="android.intent.action.SET_WALLPAPER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <meta-data android:name="android.wallpaper.preview"
+                android:resource="@xml/wallpaper_picker_preview" />
+        </activity>
+
+        <activity android:name="LiveWallpaperChange"
+            android:label="@string/live_wallpaper_preview_title"
+            android:theme="@style/Preview">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.CHANGE_LIVE_WALLPAPER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <activity android:name="LiveWallpaperPreview"
-            android:icon="@drawable/ic_launcher_live_wallpaper"
             android:label="@string/live_wallpaper_preview_title"
-            android:theme="@style/Preview"
-            android:screenOrientation="nosensor" />
-        
+            android:theme="@style/Preview" />
     </application>
 
 </manifest>

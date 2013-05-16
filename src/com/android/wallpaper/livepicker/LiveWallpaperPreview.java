@@ -58,6 +58,10 @@ public class LiveWallpaperPreview extends Activity {
     private Dialog mDialog;
 
     static void showPreview(Activity activity, int code, Intent intent, WallpaperInfo info) {
+        if (info == null) {
+            Log.w(LOG_TAG, "Failure showing preview", new Throwable());
+            return;
+        }
         Intent preview = new Intent(activity, LiveWallpaperPreview.class);
         preview.putExtra(EXTRA_LIVE_WALLPAPER_INTENT, intent);
         preview.putExtra(EXTRA_LIVE_WALLPAPER_SETTINGS, info.getSettingsActivity());
@@ -196,10 +200,28 @@ public class LiveWallpaperPreview extends Activity {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             onUserInteraction();
         }
-        if (getWindow().superDispatchTouchEvent(ev)) {
-            return true;
+        boolean handled = getWindow().superDispatchTouchEvent(ev);
+        if (!handled) {
+            handled = onTouchEvent(ev);
         }
-        return onTouchEvent(ev);
+
+        if (!handled && mWallpaperConnection != null && mWallpaperConnection.mEngine != null) {
+            int action = ev.getActionMasked();
+            try {
+                if (action == MotionEvent.ACTION_UP) {
+                    mWallpaperConnection.mEngine.dispatchWallpaperCommand(
+                            WallpaperManager.COMMAND_TAP,
+                            (int) ev.getX(), (int) ev.getY(), 0, null);
+                } else if (action == MotionEvent.ACTION_POINTER_UP) {
+                    int pointerIndex = ev.getActionIndex();
+                    mWallpaperConnection.mEngine.dispatchWallpaperCommand(
+                            WallpaperManager.COMMAND_SECONDARY_TAP,
+                            (int) ev.getX(pointerIndex), (int) ev.getY(pointerIndex), 0, null);
+                }
+            } catch (RemoteException e) {
+            }
+        }
+        return handled;
     }
     
     class WallpaperConnection extends IWallpaperConnection.Stub implements ServiceConnection {
@@ -283,6 +305,10 @@ public class LiveWallpaperPreview extends Activity {
         
         public ParcelFileDescriptor setWallpaper(String name) {
             return null;
+        }
+
+        @Override
+        public void engineShown(IWallpaperEngine engine) throws RemoteException {
         }
     }
 }
